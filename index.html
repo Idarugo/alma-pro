@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alma Pro · Diagnóstico de tu postulación</title>
+<meta name="description" content="Postulas y nunca sabes qué pasó. Alma Pro te da un diagnóstico claro de por qué tu postulación no avanza.">
+<meta property="og:title" content="Alma Pro · ¿Por qué tu postulación no avanza?">
+<meta property="og:description" content="Diagnóstico gratis y honesto de tu postulación. Sin trucos para el ATS: retroalimentación real.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<script>
+  /* ============ CONFIGURACIÓN (editar estas 2 líneas) ============ */
+  // URL de la app web de Google Apps Script (ver INSTRUCCIONES.md, paso 2)
+  window.ALMA_FORM_ENDPOINT = "PEGAR_AQUI_URL_DE_APPS_SCRIPT";
+  // ID de medición de Google Analytics 4, formato G-XXXXXXXXXX (paso 3)
+  window.ALMA_GA_ID = "G-XXXXXXXXXX";
+  /* =============================================================== */
+
+  // Carga GA4 solo si hay un ID real
+  if (/^G-[A-Z0-9]{6,}$/.test(window.ALMA_GA_ID) && window.ALMA_GA_ID !== "G-XXXXXXXXXX") {
+    var s = document.createElement("script");
+    s.async = true;
+    s.src = "https://www.googletagmanager.com/gtag/js?id=" + window.ALMA_GA_ID;
+    document.head.appendChild(s);
+  }
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  gtag("js", new Date());
+  gtag("config", window.ALMA_GA_ID);
+</script>
+
+<style>
+  :root {
+    /* Paleta inspirada en "Lover": rosado, celeste cielo, lavanda y durazno */
+    --bg: #fff6fa;
+    --surface: #ffffff;
+    --ink: #2e1d3f;
+    --muted: #6d5a7c;
+    --line: #f3dcea;
+    --brand: #c42d78;
+    --brand-ink: #ffffff;
+    --accent: #7cc0ee;
+    --soft: #fde3f0;
+    --sky: #cfe8fb;
+    --lilac: #e9dcfb;
+    --peach: #fff0d6;
+    --ok: #1f7a4d;
+    --err: #b42318;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 400 17px/1.6 "Inter", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: "Fraunces", Georgia, serif; line-height: 1.15; margin: 0 0 .5em; letter-spacing: -.01em; }
+  p { margin: 0 0 1em; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+
+  /* Fondo de nubes pastel (header + hero) */
+  .sky-top {
+    background:
+      radial-gradient(60% 55% at 12% 8%, var(--sky) 0%, transparent 70%),
+      radial-gradient(50% 60% at 88% 20%, var(--peach) 0%, transparent 70%),
+      radial-gradient(55% 50% at 70% 85%, var(--lilac) 0%, transparent 70%),
+      radial-gradient(60% 60% at 20% 90%, #ffd6ea 0%, transparent 70%),
+      #ffe9f3;
+  }
+
+  /* Header */
+  header { padding: 20px 0; }
+  .logo { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; font-size: 19px; color: var(--ink); text-decoration: none; }
+  .logo-mark { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(135deg, #e0579a, var(--brand)); display: grid; place-items: center; }
+  .logo-text { font-family: "Dancing Script", cursive; font-size: 28px; font-weight: 700; color: var(--brand); }
+  .logo-mark svg { width: 18px; height: 18px; }
+
+  /* Hero */
+  .hero { padding: 40px 0 72px; }
+  .hero-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 56px; align-items: center; }
+  .eyebrow { display: inline-block; background: rgba(255,255,255,.75); color: var(--brand); font-size: 14px; font-weight: 600; padding: 6px 12px; border-radius: 999px; margin-bottom: 20px; }
+  .hero h1 { font-size: clamp(34px, 5.2vw, 54px); }
+  .hero h1 em { font-style: normal; color: var(--brand); }
+  .lead { font-size: 19px; color: var(--muted); max-width: 34em; margin-bottom: 28px; }
+  .micro { font-size: 14px; color: var(--muted); margin-top: 14px; }
+
+  .cta {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    background: var(--brand); color: var(--brand-ink);
+    border: 0; border-radius: 12px; cursor: pointer;
+    font: 600 18px/1 "Inter", sans-serif;
+    padding: 19px 28px; min-height: 56px;
+    box-shadow: 0 6px 20px rgba(196,45,120,.30);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .cta:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(196,45,120,.38); }
+  .cta:active { transform: translateY(0); }
+  .cta:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+  /* Ilustración del "agujero negro" de postulaciones */
+  .void-card { background: rgba(255,255,255,.82); border: 1px solid rgba(255,255,255,.9); border-radius: 20px; padding: 26px; box-shadow: 0 20px 50px rgba(196,45,120,.12); backdrop-filter: blur(6px); }
+  .void-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 0; border-bottom: 1px dashed var(--line); font-size: 15px; }
+  .void-row:last-of-type { border-bottom: 0; }
+  .void-row b { font-weight: 600; }
+  .void-row small { display: block; color: var(--muted); font-size: 13px; }
+  .status { font-size: 12.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--sky); color: #2c5a80; white-space: nowrap; }
+  .void-foot { margin-top: 16px; font-size: 14px; color: var(--muted); text-align: center; }
+
+  /* Secciones */
+  section { padding: 72px 0; }
+  .section-alt { background: linear-gradient(180deg, #eef6fd 0%, #fbf3ff 100%); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .section-head { max-width: 640px; margin-bottom: 40px; }
+  .section-head h2 { font-size: clamp(28px, 3.6vw, 38px); }
+  .section-head p { color: var(--muted); }
+
+  .quote {
+    font-family: "Fraunces", Georgia, serif; font-size: clamp(22px, 3vw, 30px); line-height: 1.35;
+    border-left: 4px solid var(--accent); padding: 4px 0 4px 24px; margin: 0 0 12px; max-width: 760px;
+  }
+  .quote-src { color: var(--muted); font-size: 15px; padding-left: 28px; margin-bottom: 48px; }
+
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .stat { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; }
+  .section-alt .stat { background: rgba(255,255,255,.85); border-color: #e3e6f7; }
+  .stat-num { font-family: "Fraunces", Georgia, serif; font-size: 44px; font-weight: 700; color: var(--brand); line-height: 1; margin-bottom: 10px; }
+  .stat-num span { font-size: 22px; color: var(--muted); font-weight: 600; }
+  .stat p { margin: 0; color: var(--muted); font-size: 15.5px; }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; counter-reset: step; }
+  .step { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; }
+  .step::before { counter-increment: step; content: counter(step); display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--soft); color: var(--brand); font-weight: 600; margin-bottom: 16px; }
+  .step h3 { font-size: 21px; }
+  .step p { color: var(--muted); font-size: 15.5px; margin: 0; }
+
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .compare > div { border-radius: var(--radius); padding: 26px; border: 1px solid var(--line); }
+  .compare .no { background: var(--bg); }
+  .compare .yes { background: var(--soft); border-color: #f6c6de; }
+  .compare h3 { font-size: 20px; }
+  .compare ul { list-style: none; padding: 0; margin: 0; }
+  .compare li { padding: 8px 0 8px 30px; position: relative; font-size: 15.5px; }
+  .compare li::before { position: absolute; left: 0; top: 8px; font-weight: 700; }
+  .compare .no li::before { content: "✕"; color: var(--muted); }
+  .compare .yes li::before { content: "✓"; color: var(--brand); }
+
+  .final { text-align: center; padding: 88px 0; background: radial-gradient(50% 70% at 20% 30%, var(--sky) 0%, transparent 70%), radial-gradient(50% 70% at 80% 70%, var(--peach) 0%, transparent 70%), #ffe9f3; }
+  .final h2 { font-size: clamp(30px, 4vw, 42px); max-width: 16em; margin: 0 auto .4em; }
+  .final p { color: var(--muted); max-width: 32em; margin: 0 auto 28px; }
+
+  footer { padding: 32px 0 48px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
+
+  /* Modal del formulario */
+  dialog {
+    width: min(480px, calc(100vw - 32px)); max-height: calc(100dvh - 32px);
+    border: 0; border-radius: 20px; padding: 0; color: var(--ink); background: var(--surface);
+    box-shadow: 0 30px 80px rgba(28,26,46,.3);
+  }
+  dialog::backdrop { background: rgba(46,29,63,.45); backdrop-filter: blur(2px); }
+  dialog[open] { animation: pop .18s ease-out; }
+  @keyframes pop { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+  .modal-body { padding: 28px; }
+  .modal-close { position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border: 0; background: transparent; border-radius: 10px; font-size: 24px; color: var(--muted); cursor: pointer; }
+  .modal-close:hover { background: var(--bg); }
+  dialog h2 { font-size: 26px; padding-right: 32px; }
+  dialog .sub { color: var(--muted); font-size: 15.5px; margin-bottom: 20px; }
+
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-weight: 500; font-size: 15px; margin-bottom: 6px; }
+  .field input, .field select {
+    width: 100%; font: 400 16px "Inter", sans-serif; color: var(--ink);
+    padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 10px; background: #fff;
+  }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--soft); }
+  .field.invalid input, .field.invalid select { border-color: var(--err); }
+  .err-msg { display: none; color: var(--err); font-size: 13.5px; margin-top: 5px; }
+  .field.invalid .err-msg { display: block; }
+  .check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--muted); margin: 4px 0 20px; }
+  .check input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--brand); flex: none; }
+  .check.invalid { color: var(--err); }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  form .cta { width: 100%; }
+  .form-error { display: none; color: var(--err); font-size: 14px; margin-top: 12px; text-align: center; }
+  .cta[disabled] { opacity: .7; cursor: wait; }
+
+  .done { text-align: center; padding: 12px 0 4px; }
+  .done-icon { width: 60px; height: 60px; margin: 0 auto 16px; border-radius: 50%; background: #e3f4ea; color: var(--ok); display: grid; place-items: center; font-size: 30px; }
+  .done p { color: var(--muted); }
+
+  /* Responsive */
+  @media (max-width: 860px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 40px; }
+    .stats, .steps { grid-template-columns: 1fr; }
+    .compare { grid-template-columns: 1fr; }
+    section { padding: 56px 0; }
+  }
+  @media (max-width: 520px) {
+    body { font-size: 16px; }
+    .wrap { padding: 0 16px; }
+    .hero { padding: 16px 0 48px; }
+    .lead { font-size: 17.5px; }
+    .cta { width: 100%; }
+    .modal-body { padding: 24px 20px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+<body>
+
+<main>
+<div class="sky-top">
+<header>
+  <div class="wrap">
+    <a class="logo" href="#" aria-label="Alma Pro">
+      <span class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 12 5l7 14"/><path d="M8.5 13h7"/></svg>
+      </span>
+      <span class="logo-text">Alma Pro</span>
+    </a>
+  </div>
+</header>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">Para egresados técnico-profesionales de O'Higgins</span>
+        <h1>El ATS no es el enemigo: el problema es que <em>nunca sabes qué pasó</em> con tu postulación.</h1>
+        <p class="lead">Postulas, esperas y no llega nada. Alma Pro revisa tu CV frente a la oferta y te dice, en simple, por qué tu postulación no está avanzando y qué cambiar.</p>
+        <button class="cta" type="button" data-cta="hero">Quiero mi diagnóstico gratis</button>
+        <p class="micro">Gratis · Te toma 1 minuto · Sin spam</p>
+      </div>
+
+      <div class="void-card" aria-label="Ejemplo de postulaciones sin respuesta">
+        <div class="void-row"><div><b>Analista de soporte TI</b><small>Postulado hace 18 días · LinkedIn</small></div><span class="status">Sin respuesta</span></div>
+        <div class="void-row"><div><b>Ejecutivo comercial</b><small>Postulado hace 12 días · Laborum</small></div><span class="status">Sin respuesta</span></div>
+        <div class="void-row"><div><b>Asistente administrativo</b><small>Postulado hace 9 días · Trabajando.com</small></div><span class="status">Sin respuesta</span></div>
+        <div class="void-row"><div><b>Técnico en redes</b><small>Postulado hace 4 días · Chiletrabajos</small></div><span class="status">Sin respuesta</span></div>
+        <p class="void-foot">¿Te suena? No es que no sirvas. Es que nadie te dice qué pasó.</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /sky-top -->
+
+  <!-- PROBLEMA + PRUEBA SOCIAL -->
+  <section class="section-alt">
+    <div class="wrap">
+      <blockquote class="quote">“No tengo idea cómo filtran, postulo y de ahí es como un agujero negro.”</blockquote>
+      <p class="quote-src">— Egresado técnico-profesional, Rancagua, entrevistado por nuestro equipo</p>
+
+      <div class="section-head">
+        <h2>No eres el único postulando a ciegas</h2>
+        <p>Conversamos con jóvenes de la Región de O'Higgins que buscan trabajo activamente. Esto es lo que nos contaron:</p>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-num">6<span>/8</span></div><p>vive el silencio después de postular: nunca recibe retroalimentación sobre su CV.</p></div>
+        <div class="stat"><div class="stat-num">5<span>/8</span></div><p>siente que ese silencio le pasa la cuenta: autoduda, desgaste y frustración.</p></div>
+        <div class="stat"><div class="stat-num">4<span>/8</span></div><p>quiere entender qué pasó con su postulación, no buscar trucos para engañar al sistema.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CÓMO FUNCIONA -->
+  <section>
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Cómo funciona el diagnóstico</h2>
+        <p>Retroalimentación real, la que hoy ninguna empresa te da.</p>
+      </div>
+      <div class="steps">
+        <div class="step"><h3>Nos compartes tu CV y una oferta</h3><p>Una oferta a la que postulaste o a la que quieres postular.</p></div>
+        <div class="step"><h3>Revisamos cómo te ve el proceso</h3><p>Cómo lee tu CV un filtro automático y cómo lo lee quien selecciona.</p></div>
+        <div class="step"><h3>Recibes un diagnóstico claro</h3><p>Qué está frenando tu postulación y qué cambiar, en palabras simples.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUÉ ES / QUÉ NO ES -->
+  <section class="section-alt">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Claridad, no trucos</h2>
+      </div>
+      <div class="compare">
+        <div class="no">
+          <h3>Lo que no hacemos</h3>
+          <ul>
+            <li>Plantillas mágicas para “vencer” al ATS</li>
+            <li>Llenar tu CV de palabras clave sin sentido</li>
+            <li>Prometerte que vas a quedar en todas</li>
+          </ul>
+        </div>
+        <div class="yes">
+          <h3>Lo que sí hacemos</h3>
+          <ul>
+            <li>Explicarte por qué tu postulación no avanza</li>
+            <li>Mostrarte qué ajustar según el tipo de cargo</li>
+            <li>Darte una respuesta honesta, en vez de silencio</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA FINAL -->
+  <div class="final">
+    <div class="wrap">
+      <h2>Deja de postular sin saber qué pasa</h2>
+      <p>Déjanos tu correo y te contactamos para hacer tu diagnóstico gratis.</p>
+      <button class="cta" type="button" data-cta="final">Quiero mi diagnóstico gratis</button>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    Alma Pro es un proyecto en desarrollo de estudiantes de la Universidad de O'Higgins. Usamos tus datos solo para contactarte sobre el diagnóstico; nunca los compartimos con terceros.
+  </div>
+</footer>
+
+<!-- FORMULARIO (modal) -->
+<dialog id="lead-dialog" aria-labelledby="dlg-title">
+  <button class="modal-close" type="button" aria-label="Cerrar" data-close>&times;</button>
+  <div class="modal-body">
+    <div id="form-view">
+      <h2 id="dlg-title">Tu diagnóstico gratis</h2>
+      <p class="sub">Déjanos tus datos y te escribimos para empezar.</p>
+      <form id="lead-form" novalidate>
+        <div class="field">
+          <label for="f-nombre">Nombre</label>
+          <input id="f-nombre" name="nombre" type="text" autocomplete="given-name" required maxlength="80">
+          <div class="err-msg">Escribe tu nombre.</div>
+        </div>
+        <div class="field">
+          <label for="f-correo">Correo</label>
+          <input id="f-correo" name="correo" type="email" autocomplete="email" inputmode="email" required maxlength="120" placeholder="tucorreo@gmail.com">
+          <div class="err-msg">Revisa tu correo, parece estar mal escrito.</div>
+        </div>
+        <div class="field">
+          <label for="f-area">¿A qué área postulas?</label>
+          <select id="f-area" name="area" required>
+            <option value="">Elige una opción</option>
+            <option>Tecnología / TI</option>
+            <option>Retail / comercio</option>
+            <option>Servicios profesionales</option>
+            <option>Otra</option>
+          </select>
+          <div class="err-msg">Elige un área.</div>
+        </div>
+        <div class="field">
+          <label for="f-exp">Años de experiencia laboral</label>
+          <select id="f-exp" name="experiencia" required>
+            <option value="">Elige una opción</option>
+            <option>Menos de 1 año</option>
+            <option>1 a 2 años</option>
+            <option>3 a 4 años</option>
+            <option>Más de 4 años</option>
+          </select>
+          <div class="err-msg">Elige una opción.</div>
+        </div>
+        <div class="field">
+          <label for="f-zona">¿Dónde vives?</label>
+          <select id="f-zona" name="zona" required>
+            <option value="">Elige una opción</option>
+            <option>Rancagua</option>
+            <option>Otra comuna de O'Higgins</option>
+            <option>Fuera de O'Higgins</option>
+          </select>
+          <div class="err-msg">Elige una opción.</div>
+        </div>
+        <!-- trampa anti-bots: las personas no ven este campo -->
+        <div class="hp" aria-hidden="true"><label>Empresa <input name="empresa" tabindex="-1" autocomplete="off"></label></div>
+        <label class="check" id="consent-wrap">
+          <input id="f-consent" type="checkbox" required>
+          <span>Acepto que Alma Pro me contacte por correo sobre el diagnóstico.</span>
+        </label>
+        <button class="cta" type="submit" id="submit-btn">Quiero mi diagnóstico gratis</button>
+        <p class="form-error" id="form-error">No pudimos enviar tus datos. Revisa tu conexión e intenta otra vez.</p>
+      </form>
+    </div>
+    <div id="done-view" class="done" hidden>
+      <div class="done-icon" aria-hidden="true">✓</div>
+      <h2>¡Listo, <span id="done-name"></span>!</h2>
+      <p>Quedaste en la lista. Estamos preparando los primeros diagnósticos y te escribiremos a tu correo muy pronto.</p>
+      <button class="cta" type="button" data-close>Cerrar</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  var dialog = document.getElementById("lead-dialog");
+  var form = document.getElementById("lead-form");
+  var params = new URLSearchParams(location.search);
+
+  // Origen del visitante (UTM). Sin UTM = "directo".
+  var origin = {
+    utm_source: params.get("utm_source") || "directo",
+    utm_medium: params.get("utm_medium") || "",
+    utm_campaign: params.get("utm_campaign") || "",
+    // ?test=1 marca la fila como PRUEBA en la planilla (Criterio 5)
+    es_prueba: params.get("test") === "1" ? "SI" : "NO",
+    referrer: document.referrer || ""
+  };
+
+  // Evento 1: clic en el CTA
+  document.querySelectorAll("[data-cta]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      gtag("event", "cta_click", { cta_position: btn.dataset.cta, source: origin.utm_source });
+      document.getElementById("form-view").hidden = false;
+      document.getElementById("done-view").hidden = true;
+      dialog.showModal();
+      setTimeout(function () { document.getElementById("f-nombre").focus(); }, 50);
+    });
+  });
+
+  dialog.querySelectorAll("[data-close]").forEach(function (b) {
+    b.addEventListener("click", function () { dialog.close(); });
+  });
+  dialog.addEventListener("click", function (e) { if (e.target === dialog) dialog.close(); });
+
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
+
+  function setInvalid(el, bad) {
+    el.closest(".field").classList.toggle("invalid", bad);
+    return !bad;
+  }
+
+  function validate() {
+    var ok = true;
+    var nombre = form.nombre.value.trim();
+    var correo = form.correo.value.trim();
+    ok = setInvalid(form.nombre, nombre.length < 2) && ok;
+    ok = setInvalid(form.correo, !EMAIL_RE.test(correo)) && ok;
+    ok = setInvalid(form.area, !form.area.value) && ok;
+    ok = setInvalid(form.experiencia, !form.experiencia.value) && ok;
+    ok = setInvalid(form.zona, !form.zona.value) && ok;
+    var consent = document.getElementById("f-consent").checked;
+    document.getElementById("consent-wrap").classList.toggle("invalid", !consent);
+    return ok && consent;
+  }
+
+  form.addEventListener("input", function (e) {
+    var f = e.target.closest(".field");
+    if (f && f.classList.contains("invalid")) validate();
+  });
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    document.getElementById("form-error").style.display = "none";
+    if (!validate()) {
+      var first = form.querySelector(".invalid input, .invalid select");
+      if (first) first.focus();
+      return;
+    }
+    if (form.empresa.value) return; // bot
+
+    var btn = document.getElementById("submit-btn");
+    btn.disabled = true;
+    btn.textContent = "Enviando…";
+
+    var data = new URLSearchParams({
+      nombre: form.nombre.value.trim(),
+      correo: form.correo.value.trim().toLowerCase(),
+      area: form.area.value,
+      experiencia: form.experiencia.value,
+      zona: form.zona.value,
+      utm_source: origin.utm_source,
+      utm_medium: origin.utm_medium,
+      utm_campaign: origin.utm_campaign,
+      es_prueba: origin.es_prueba,
+      referrer: origin.referrer
+    });
+
+    var endpoint = window.ALMA_FORM_ENDPOINT;
+    var send = endpoint.indexOf("https://script.google.com/") === 0
+      ? fetch(endpoint, { method: "POST", mode: "no-cors", body: data })
+      : (console.warn("ALMA_FORM_ENDPOINT no configurado: el registro NO se guardó.", Object.fromEntries(data)), Promise.resolve());
+
+    send.then(function () {
+      // Evento 2: envío del formulario (correo dejado)
+      gtag("event", "generate_lead", { source: origin.utm_source });
+      document.getElementById("done-name").textContent = form.nombre.value.trim().split(" ")[0];
+      document.getElementById("form-view").hidden = true;
+      document.getElementById("done-view").hidden = false;
+      form.reset();
+    }).catch(function () {
+      document.getElementById("form-error").style.display = "block";
+    }).finally(function () {
+      btn.disabled = false;
+      btn.textContent = "Quiero mi diagnóstico gratis";
+    });
+  });
+})();
+</script>
+</body>
+</html>
