@@ -2,12 +2,15 @@
  * Alma Pro — Captura de registros de la landing (Criterio 3)
  *
  * Recibe cada envío del formulario, agrega una fila en esta planilla
- * y manda un correo de aviso al equipo. Pegar en Extensiones > Apps Script
- * de la planilla de Google Sheets (ver INSTRUCCIONES.md, paso 2).
+ * y manda un correo de aviso al equipo. Se pega en un proyecto de Apps Script
+ * (script.google.com) o en Extensiones > Apps Script de la planilla.
  */
 
 // Correos del equipo que reciben el aviso (separados por coma)
-var EMAILS_EQUIPO = "correo1@gmail.com,correo2@gmail.com";
+var EMAILS_EQUIPO = "onepiecemonkeydluffy20@gmail.com";
+
+// ID de la planilla "Alma Pro - Registros MVP" (está en su URL, entre /d/ y /edit)
+var SPREADSHEET_ID = "1vhLb1q1TNdcnpU7z3w5JS2ZA4_opEpjfxy5CoJSEdB8";
 
 var COLUMNAS = [
   "Fecha", "Nombre", "Correo", "Área", "Experiencia", "Zona",
@@ -24,8 +27,8 @@ function doPost(e) {
       return respuesta({ ok: false, error: "datos inválidos" });
     }
 
-    var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Registros")
-      || SpreadsheetApp.getActiveSpreadsheet().insertSheet("Registros");
+    var libro = SpreadsheetApp.openById(SPREADSHEET_ID);
+    var hoja = libro.getSheetByName("Registros") || libro.insertSheet("Registros");
     if (hoja.getLastRow() === 0) {
       hoja.appendRow(COLUMNAS);
       hoja.getRange(1, 1, 1, COLUMNAS.length).setFontWeight("bold");
@@ -57,7 +60,7 @@ function doPost(e) {
         "Zona: " + (p.zona || "-") + "\n" +
         "Origen: " + (p.utm_source || "directo") + "\n\n" +
         "Registros reales acumulados: " + reales + " / 15 (umbral)\n" +
-        SpreadsheetApp.getActiveSpreadsheet().getUrl()
+        libro.getUrl()
     });
 
     return respuesta({ ok: true });
@@ -69,4 +72,10 @@ function doPost(e) {
 function respuesta(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// Ejecutar una vez desde el editor para conceder permisos (planilla + correo)
+function autorizar() {
+  Logger.log(SpreadsheetApp.openById(SPREADSHEET_ID).getName());
+  Logger.log("Correos disponibles hoy: " + MailApp.getRemainingDailyQuota());
 }
